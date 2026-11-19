@@ -1,0 +1,1004 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Preliminary Accident Report (PAR) Management System</title>
+  <style>
+    :root {
+      --primary: #b91c1c;
+      --primary-dark: #991b1b;
+      --navy: #0f172a;
+      --slate: #334155;
+      --muted: #64748b;
+      --border: #cbd5e1;
+      --bg: #f1f5f9;
+      --card: #ffffff;
+      --success: #15803d;
+      --warning: #b45309;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--navy);
+      line-height: 1.5;
+    }
+
+    /* Top Header */
+    header {
+      background: var(--navy);
+      color: #fff;
+      padding: 1rem 2rem;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      border-bottom: 4px solid var(--primary);
+    }
+
+    header h1 {
+      font-size: 1.25rem;
+      letter-spacing: 0.5px;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .badge-hse {
+      background: var(--primary);
+      padding: 0.2rem 0.55rem;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+
+    nav {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    button {
+      cursor: pointer;
+      border: none;
+      border-radius: 6px;
+      padding: 0.55rem 1rem;
+      font-size: 0.875rem;
+      font-weight: 600;
+      transition: 0.15s ease;
+    }
+
+    .btn-nav {
+      background: rgba(255, 255, 255, 0.12);
+      color: #fff;
+    }
+
+    .btn-nav.active, .btn-nav:hover {
+      background: var(--primary);
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: #fff;
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-dark);
+    }
+
+    .btn-secondary {
+      background: #e2e8f0;
+      color: var(--navy);
+    }
+
+    .btn-secondary:hover {
+      background: #cbd5e1;
+    }
+
+    .btn-dark {
+      background: var(--navy);
+      color: #fff;
+    }
+
+    .btn-dark:hover {
+      background: #1e293b;
+    }
+
+    .btn-sm {
+      padding: 0.35rem 0.65rem;
+      font-size: 0.8rem;
+    }
+
+    main {
+      max-width: 1120px;
+      margin: 1.5rem auto;
+      padding: 0 1rem 3rem;
+    }
+
+    .view {
+      display: none;
+    }
+
+    .view.active {
+      display: block;
+    }
+
+    /* Dashboard Cards */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .kpi-card {
+      background: var(--card);
+      padding: 1.15rem;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+    }
+
+    .kpi-card span {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    .kpi-card h2 {
+      font-size: 1.85rem;
+      margin-top: 0.25rem;
+    }
+
+    .toolbar {
+      background: var(--card);
+      padding: 1rem;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+
+    .toolbar-group {
+      display: flex;
+      gap: 0.6rem;
+      flex-wrap: wrap;
+      flex: 1;
+    }
+
+    input[type="text"],
+    input[type="date"],
+    input[type="datetime-local"],
+    select,
+    textarea {
+      width: 100%;
+      padding: 0.55rem 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 0.9rem;
+      color: var(--navy);
+      background: #fff;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      outline: 2px solid rgba(185, 28, 28, 0.25);
+      border-color: var(--primary);
+    }
+
+    /* Table */
+    .table-wrap {
+      background: var(--card);
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 0.875rem;
+    }
+
+    th, td {
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    th {
+      background: #f8fafc;
+      font-weight: 700;
+      color: var(--slate);
+      white-space: nowrap;
+    }
+
+    .status-pill {
+      display: inline-block;
+      padding: 0.2rem 0.6rem;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+
+    .status-ongoing {
+      background: #fef3c7;
+      color: var(--warning);
+    }
+
+    .status-completed {
+      background: #dcfce7;
+      color: var(--success);
+    }
+
+    /* Form Layout */
+    .form-card {
+      background: var(--card);
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      padding: 1.5rem;
+    }
+
+    .section-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      color: var(--primary);
+      border-bottom: 2px solid #e2e8f0;
+      padding-bottom: 0.4rem;
+      margin: 1.5rem 0 1rem;
+    }
+
+    .section-title:first-of-type {
+      margin-top: 0;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1rem;
+    }
+
+    .field {
+      margin-bottom: 0.9rem;
+    }
+
+    .field label {
+      display: block;
+      font-weight: 700;
+      font-size: 0.85rem;
+      margin-bottom: 0.35rem;
+      color: var(--slate);
+    }
+
+    .tag-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      margin-bottom: 0.45rem;
+    }
+
+    .tag-btn {
+      background: #f1f5f9;
+      border: 1px solid var(--border);
+      color: var(--slate);
+      padding: 0.2rem 0.55rem;
+      font-size: 0.75rem;
+      border-radius: 4px;
+    }
+
+    .tag-btn:hover {
+      background: #e2e8f0;
+    }
+
+    .radio-group {
+      display: flex;
+      gap: 1.5rem;
+      padding: 0.4rem 0;
+    }
+
+    .radio-group label {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    /* Official Printable Report Sheet */
+    .print-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+    }
+
+    .report-sheet {
+      background: #fff;
+      border: 1.5px solid #000;
+      padding: 2rem;
+      max-width: 850px;
+      margin: 0 auto;
+      color: #000;
+    }
+
+    .sheet-header {
+      text-align: center;
+      border-bottom: 2px solid #000;
+      padding-bottom: 0.75rem;
+      margin-bottom: 1rem;
+    }
+
+    .sheet-header h2 {
+      font-size: 1.3rem;
+      letter-spacing: 0.8px;
+      text-decoration: underline;
+    }
+
+    .sheet-meta {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.85rem;
+      margin-top: 0.4rem;
+      font-weight: 600;
+    }
+
+    .sheet-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 1.25rem;
+    }
+
+    .sheet-table td {
+      border: 1px solid #000;
+      padding: 0.55rem 0.7rem;
+      vertical-align: top;
+      font-size: 0.9rem;
+    }
+
+    .sheet-table td.lbl {
+      width: 36%;
+      font-weight: 700;
+      background: #f8fafc;
+    }
+
+    .signoff-box {
+      border: 1px solid #000;
+      padding: 0.9rem;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+      font-size: 0.9rem;
+    }
+
+    .signoff-box div p {
+      margin-top: 1.75rem;
+      border-top: 1px solid #000;
+      padding-top: 0.25rem;
+      font-weight: 700;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 1.25rem;
+      right: 1.25rem;
+      background: var(--navy);
+      color: #fff;
+      padding: 0.75rem 1.1rem;
+      border-radius: 6px;
+      font-size: 0.875rem;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      display: none;
+      z-index: 999;
+    }
+
+    @media print {
+      body {
+        background: #fff;
+      }
+      header, .print-actions, .toast {
+        display: none !important;
+      }
+      main {
+        margin: 0;
+        padding: 0;
+        max-width: 100%;
+      }
+      .report-sheet {
+        border: 1.5px solid #000;
+        padding: 1.25rem;
+        box-shadow: none;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1><span class="badge-hse">HSE</span> PRELIMINARY ACCIDENT REPORT SYSTEM</h1>
+  <nav>
+    <button class="btn-nav active" id="nav-list" onclick="switchView('list')">Reports Log</button>
+    <button class="btn-nav" id="nav-form" onclick="openNewForm()">+ New Report</button>
+  </nav>
+</header>
+
+<main>
+  <!-- VIEW 1: REPORTS DASHBOARD -->
+  <section id="view-list" class="view active">
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <span>Total Reports</span>
+        <h2 id="kpi-total">0</h2>
+      </div>
+      <div class="kpi-card">
+        <span>Ongoing Investigation</span>
+        <h2 id="kpi-ongoing" style="color: var(--warning);">0</h2>
+      </div>
+      <div class="kpi-card">
+        <span>Completed</span>
+        <h2 id="kpi-completed" style="color: var(--success);">0</h2>
+      </div>
+    </div>
+
+    <div class="toolbar">
+      <div class="toolbar-group">
+        <input type="text" id="searchInput" placeholder="Search Ref No, Project, Victim, Location, or Type..." oninput="renderTable()" style="max-width: 360px;" />
+        <select id="statusFilter" onchange="renderTable()" style="max-width: 200px;">
+          <option value="ALL">All Statuses</option>
+          <option value="Ongoing">Ongoing</option>
+          <option value="Completed">Completed</option>
+        </select>
+      </div>
+      <div style="display: flex; gap: 0.5rem;">
+        <button class="btn-secondary" onclick="exportCSV()">Export CSV</button>
+        <button class="btn-primary" onclick="openNewForm()">+ Create Report</button>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Ref No.</th>
+            <th>Date & Time</th>
+            <th>Project</th>
+            <th>Location / Chainage</th>
+            <th>Victim Name</th>
+            <th>Type of Accident</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="reportsTbody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- VIEW 2: ENTRY / EDIT FORM -->
+  <section id="view-form" class="view">
+    <div class="form-card">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+        <h2 id="formHeading">New Preliminary Accident Report</h2>
+        <button class="btn-secondary" onclick="switchView('list')">Cancel</button>
+      </div>
+
+      <form id="parForm" onsubmit="saveReport(event)">
+        <input type="hidden" id="editId" />
+
+        <div class="section-title">A. Project & Incident Overview</div>
+        <div class="form-grid">
+          <div class="field">
+            <label for="f_project">1. PROJECT *</label>
+            <input type="text" id="f_project" required placeholder="e.g., Pan Borneo Highway Package WPC-09" />
+          </div>
+          <div class="field">
+            <label for="f_location">2. LOCATION / CHAINAGE *</label>
+            <input type="text" id="f_location" required placeholder="e.g., CH 14+250 Bridge Pier 3" />
+          </div>
+          <div class="field">
+            <label for="f_datetime">3. DATE & TIME OF ACCIDENT *</label>
+            <input type="datetime-local" id="f_datetime" required />
+          </div>
+        </div>
+
+        <div class="section-title">B. Victim & Employment Details</div>
+        <div class="form-grid">
+          <div class="field">
+            <label for="f_victim">4. NAME OF VICTIM *</label>
+            <input type="text" id="f_victim" required placeholder="Full name as per IC / Passport" />
+          </div>
+          <div class="field">
+            <label for="f_ic">5. IC / PASSPORT *</label>
+            <input type="text" id="f_ic" required placeholder="e.g., 920415-13-5421 or A12345678" />
+          </div>
+          <div class="field">
+            <label for="f_dob">6. DATE OF BIRTH *</label>
+            <input type="date" id="f_dob" required />
+          </div>
+          <div class="field">
+            <label for="f_employer">7. EMPLOYER / WPC / TERM OF SERVICE (HOW LONG) *</label>
+            <input type="text" id="f_employer" required placeholder="e.g., Maju Bina Sdn Bhd / WPC-09 / 1 Year 4 Months" />
+          </div>
+          <div class="field">
+            <label for="f_designation">8. DESIGNATION *</label>
+            <input type="text" id="f_designation" required placeholder="e.g., Rigger / General Worker / Excavator Operator" />
+          </div>
+        </div>
+
+        <div class="section-title">C. Accident Classification & Description</div>
+        <div class="form-grid">
+          <div class="field">
+            <label for="f_type">9. TYPE OF ACCIDENT *</label>
+            <input type="text" id="f_type" list="accidentTypes" required placeholder="Select accident category" />
+            <datalist id="accidentTypes">
+              <option value="Biological"></option>
+              <option value="Environment Diseases"></option>
+              <option value="Fatality"></option>
+              <option value="Major Injuries"></option>
+              <option value="Minor Injuries"></option>
+              <option value="Near Miss"></option>
+              <option value="Poisoning"></option>
+              <option value="Property Damage"></option>
+              <option value="Traffic Accident"></option>              
+            </datalist>
+          </div>
+          <div class="field">
+            <label for="f_activity">10. ACTIVITY AT THE TIME OF ACCIDENT *</label>
+            <input type="text" id="f_activity" required placeholder="e.g., Dismantling formwork scaffolding at Pier 3" />
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="f_description">11. BRIEF DESCRIPTION OF ACCIDENT *</label>
+          <textarea id="f_description" rows="4" required placeholder="Describe sequence of events leading up to, during, and immediately after the incident..."></textarea>
+        </div>
+
+        <div class="field">
+          <label for="f_injury">12. INJURY / DAMAGE DETAILS *</label>
+          <textarea id="f_injury" rows="2" required placeholder="Specify body part injured, severity, medical treatment, or equipment/property damaged..."></textarea>
+        </div>
+
+        <div class="section-title">D. Response, Authorities & Investigation</div>
+        <div class="field">
+          <label for="f_action">13. IMMEDIATE ACTION TAKEN *</label>
+          <textarea id="f_action" rows="2" required placeholder="e.g., First aid administered on site, work stopped, area barricaded, victim sent to clinic/hospital..."></textarea>
+        </div>
+
+        <div class="field">
+          <label for="f_authorities">14. AUTHORITIES NOTIFIED</label>
+          <div class="tag-row">
+            <button type="button" class="tag-btn" onclick="appendAuthority('DOSH / JKKP')">+ DOSH / JKKP</button>
+            <button type="button" class="tag-btn" onclick="appendAuthority('PDRM (Police)')">+ PDRM</button>
+            <button type="button" class="tag-btn" onclick="appendAuthority('BOMBA')">+ BOMBA</button>
+            <button type="button" class="tag-btn" onclick="appendAuthority('Hospital / Klinik Kesihatan')">+ Hospital</button>
+            <button type="button" class="tag-btn" onclick="appendAuthority('Client / S.O.')">+ Client / S.O.</button>
+            <button type="button" class="tag-btn" onclick="appendAuthority('PERKESO / SOCSO')">+ PERKESO</button>
+          </div>
+          <input type="text" id="f_authorities" placeholder="Click tags above or type notified authorities..." />
+        </div>
+
+        <div class="field">
+          <label for="f_findings">15. PRELIMINARY FINDINGS</label>
+          <textarea id="f_findings" rows="2" placeholder="Immediate unsafe acts or unsafe conditions identified..."></textarea>
+        </div>
+
+        <div class="field">
+          <label for="f_corrective">16. CORRECTIVE ACTION / RECOMMENDATIONS</label>
+          <textarea id="f_corrective" rows="3" placeholder="Preventive measures, toolbox briefing, re-inspection, or engineering controls required..."></textarea>
+        </div>
+
+        <div class="field">
+          <label>17. INVESTIGATION STATUS *</label>
+          <div class="radio-group">
+            <label><input type="radio" name="f_status" value="Ongoing" checked /> Ongoing</label>
+            <label><input type="radio" name="f_status" value="Completed" /> Completed</label>
+          </div>
+        </div>
+
+        <div class="section-title">E. Report Sign-Off</div>
+        <div class="form-grid">
+          <div class="field">
+            <label for="f_preparedBy">Prepared by *</label>
+            <input type="text" id="f_preparedBy" required placeholder="Name of HSE Officer / Supervisor" />
+          </div>
+          <div class="field">
+            <label for="f_prepDesignation">Designation *</label>
+            <input type="text" id="f_prepDesignation" required placeholder="e.g., Site Safety Supervisor (SSS)" />
+          </div>
+          <div class="field">
+            <label for="f_prepDate">Date *</label>
+            <input type="date" id="f_prepDate" required />
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 1.25rem;">
+          <button type="button" class="btn-secondary" onclick="switchView('list')">Cancel</button>
+          <button type="submit" class="btn-primary">Save Preliminary Report</button>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <!-- VIEW 3: PRINTABLE OFFICIAL PREVIEW -->
+  <section id="view-preview" class="view">
+    <div class="print-actions">
+      <button class="btn-secondary" onclick="switchView('list')">&larr; Back to Reports Log</button>
+      <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+        <button class="btn-secondary" id="btnEditFromPreview">Edit Report</button>
+        <button class="btn-dark" onclick="copyWhatsAppSummary()">Copy Summary (WhatsApp/Email)</button>
+        <button class="btn-primary" onclick="window.print()">Print / Save as PDF</button>
+      </div>
+    </div>
+
+    <div class="report-sheet" id="reportSheet"></div>
+  </section>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  const STORAGE_KEY = "hse_par_reports_v1";
+  let currentPreviewReport = null;
+
+  // Pre-loaded sample report if storage is empty
+  function getReports() {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) {
+      const sample = [
+        {
+          id: "PAR-2026-001",
+          project: "Main Trunk Road Upgrading & Bridge Works (Package 04)",
+          location: "CH 18+400, North Abutment Slope",
+          datetime: "2026-11-12T10:15",
+          victim: "Ahmad Bin Kassim",
+          ic: "940812-13-5189",
+          dob: "1994-08-12",
+          employer: "Borneo Civil Works Sdn Bhd / WPC-04 / 1 Year 6 Months",
+          designation: "General Construction Worker",
+          type: "Slip, Trip and Fall",
+          activity: "Carrying rebar tie-wire bundles along temporary access walkway",
+          description: "While walking along the timber access plank near CH 18+400 after light rain, the worker slipped on a wet plank edge and fell onto the compacted earth embankment.",
+          injury: "Minor abrasion and sprain on right ankle. No fractures reported.",
+          action: "Site first aider applied cold compress and bandage; victim transported to Klinik Kesihatan for medical check-up. Walkway anti-slip strips installed.",
+          authorities: "Client / S.O., Hospital / Klinik Kesihatan",
+          findings: "Timber access walkway lacked anti-slip cleats and grip tape during damp weather conditions.",
+          corrective: "1. Install wire mesh / anti-slip strips on all timber walkways.\n2. Conduct mandatory morning toolbox briefing on wet-weather housekeeping.",
+          status: "Ongoing",
+          preparedBy: "Hafiz Rahman",
+          prepDesignation: "Site Safety Supervisor (SSS)",
+          prepDate: "2026-11-12"
+        }
+      ];
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(sample));
+      return sample;
+    }
+    return JSON.parse(raw);
+  }
+
+  function saveAllReports(reports) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(reports));
+  }
+
+  function showToast(msg) {
+    const el = document.getElementById("toast");
+    el.textContent = msg;
+    el.style.display = "block";
+    setTimeout(() => { el.style.display = "none"; }, 2800);
+  }
+
+  function switchView(viewName) {
+    document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
+    document.querySelectorAll(".btn-nav").forEach(b => b.classList.remove("active"));
+    document.getElementById("view-" + viewName).classList.add("active");
+    if (viewName === "list") {
+      document.getElementById("nav-list").classList.add("active");
+      renderTable();
+    } else if (viewName === "form") {
+      document.getElementById("nav-form").classList.add("active");
+    }
+  }
+
+  function formatDateTime(dtStr) {
+    if (!dtStr) return "-";
+    const d = new Date(dtStr);
+    if (isNaN(d)) return dtStr;
+    return d.toLocaleString("en-GB", {
+      day: "2-digit", month: "short", year: "numeric",
+      hour: "2-digit", minute: "2-digit", hour12: true
+    });
+  }
+
+  function formatDateOnly(dStr) {
+    if (!dStr) return "-";
+    const [y, m, d] = dStr.split("-");
+    return y && m && d ? `${d}/${m}/${y}` : dStr;
+  }
+
+  function escapeHTML(str) {
+    return (str || "").replace(/[&<>"']/g, m => ({
+      "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+    }[m]));
+  }
+
+  function renderTable() {
+    const reports = getReports();
+    const query = document.getElementById("searchInput").value.toLowerCase().trim();
+    const statusFilter = document.getElementById("statusFilter").value;
+
+    document.getElementById("kpi-total").textContent = reports.length;
+    document.getElementById("kpi-ongoing").textContent = reports.filter(r => r.status === "Ongoing").length;
+    document.getElementById("kpi-completed").textContent = reports.filter(r => r.status === "Completed").length;
+
+    const filtered = reports.filter(r => {
+      const matchesStatus = statusFilter === "ALL" || r.status === statusFilter;
+      const hay = `${r.id} ${r.project} ${r.location} ${r.victim} ${r.type}`.toLowerCase();
+      return matchesStatus && hay.includes(query);
+    });
+
+    const tbody = document.getElementById("reportsTbody");
+    if (filtered.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:2rem; color:var(--muted);">No accident reports found.</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = filtered.map(r => `
+      <tr>
+        <td><strong>${escapeHTML(r.id)}</strong></td>
+        <td>${formatDateTime(r.datetime)}</td>
+        <td>${escapeHTML(r.project)}</td>
+        <td>${escapeHTML(r.location)}</td>
+        <td>${escapeHTML(r.victim)}</td>
+        <td>${escapeHTML(r.type)}</td>
+        <td><span class="status-pill ${r.status === 'Completed' ? 'status-completed' : 'status-ongoing'}">${escapeHTML(r.status)}</span></td>
+        <td style="white-space:nowrap;">
+          <button class="btn-dark btn-sm" onclick="viewReport('${r.id}')">View / Print</button>
+          <button class="btn-secondary btn-sm" onclick="editReport('${r.id}')">Edit</button>
+          <button class="btn-secondary btn-sm" style="color:#b91c1c;" onclick="deleteReport('${r.id}')">Delete</button>
+        </td>
+      </tr>
+    `).join("");
+  }
+
+  function openNewForm() {
+    document.getElementById("parForm").reset();
+    document.getElementById("editId").value = "";
+    document.getElementById("formHeading").textContent = "New Preliminary Accident Report";
+    document.getElementById("f_prepDate").value = new Date().toISOString().split("T")[0];
+    switchView("form");
+  }
+
+  function appendAuthority(val) {
+    const input = document.getElementById("f_authorities");
+    const existing = input.value.split(",").map(s => s.trim()).filter(Boolean);
+    if (!existing.includes(val)) {
+      existing.push(val);
+      input.value = existing.join(", ");
+    }
+  }
+
+  function generateNextId(reports) {
+    const year = new Date().getFullYear();
+    const nums = reports
+      .map(r => parseInt((r.id.split("-")[2] || "0"), 10))
+      .filter(n => !isNaN(n));
+    const next = (nums.length ? Math.max(...nums) : 0) + 1;
+    return `PAR-${year}-${String(next).padStart(3, "0")}`;
+  }
+
+  function saveReport(e) {
+    e.preventDefault();
+    const reports = getReports();
+    const editId = document.getElementById("editId").value;
+
+    const record = {
+      id: editId || generateNextId(reports),
+      project: document.getElementById("f_project").value.trim(),
+      location: document.getElementById("f_location").value.trim(),
+      datetime: document.getElementById("f_datetime").value,
+      victim: document.getElementById("f_victim").value.trim(),
+      ic: document.getElementById("f_ic").value.trim(),
+      dob: document.getElementById("f_dob").value,
+      employer: document.getElementById("f_employer").value.trim(),
+      designation: document.getElementById("f_designation").value.trim(),
+      type: document.getElementById("f_type").value.trim(),
+      activity: document.getElementById("f_activity").value.trim(),
+      description: document.getElementById("f_description").value.trim(),
+      injury: document.getElementById("f_injury").value.trim(),
+      action: document.getElementById("f_action").value.trim(),
+      authorities: document.getElementById("f_authorities").value.trim() || "None",
+      findings: document.getElementById("f_findings").value.trim() || "Pending detailed investigation",
+      corrective: document.getElementById("f_corrective").value.trim() || "Pending detailed investigation",
+      status: document.querySelector('input[name="f_status"]:checked').value,
+      preparedBy: document.getElementById("f_preparedBy").value.trim(),
+      prepDesignation: document.getElementById("f_prepDesignation").value.trim(),
+      prepDate: document.getElementById("f_prepDate").value
+    };
+
+    if (editId) {
+      const idx = reports.findIndex(r => r.id === editId);
+      if (idx !== -1) reports[idx] = record;
+    } else {
+      reports.unshift(record);
+    }
+
+    saveAllReports(reports);
+    showToast(`Report ${record.id} saved successfully.`);
+    viewReport(record.id);
+  }
+
+  function editReport(id) {
+    const r = getReports().find(item => item.id === id);
+    if (!r) return;
+
+    document.getElementById("editId").value = r.id;
+    document.getElementById("formHeading").textContent = `Edit Report (${r.id})`;
+    document.getElementById("f_project").value = r.project;
+    document.getElementById("f_location").value = r.location;
+    document.getElementById("f_datetime").value = r.datetime;
+    document.getElementById("f_victim").value = r.victim;
+    document.getElementById("f_ic").value = r.ic;
+    document.getElementById("f_dob").value = r.dob;
+    document.getElementById("f_employer").value = r.employer;
+    document.getElementById("f_designation").value = r.designation;
+    document.getElementById("f_type").value = r.type;
+    document.getElementById("f_activity").value = r.activity;
+    document.getElementById("f_description").value = r.description;
+    document.getElementById("f_injury").value = r.injury;
+    document.getElementById("f_action").value = r.action;
+    document.getElementById("f_authorities").value = r.authorities;
+    document.getElementById("f_findings").value = r.findings;
+    document.getElementById("f_corrective").value = r.corrective;
+    document.querySelector(`input[name="f_status"][value="${r.status}"]`).checked = true;
+    document.getElementById("f_preparedBy").value = r.preparedBy;
+    document.getElementById("f_prepDesignation").value = r.prepDesignation;
+    document.getElementById("f_prepDate").value = r.prepDate;
+
+    switchView("form");
+  }
+
+  function deleteReport(id) {
+    if (!confirm(`Delete report ${id}? This action cannot be undone.`)) return;
+    const reports = getReports().filter(r => r.id !== id);
+    saveAllReports(reports);
+    renderTable();
+    showToast(`Report ${id} deleted.`);
+  }
+
+  function viewReport(id) {
+    const r = getReports().find(item => item.id === id);
+    if (!r) return;
+    currentPreviewReport = r;
+
+    document.getElementById("btnEditFromPreview").onclick = () => editReport(r.id);
+
+    const statusCheckboxes = `
+      ${r.status === "Ongoing" ? "&#9745;" : "&#9744;"} Ongoing &nbsp;&nbsp;&nbsp;&nbsp;
+      ${r.status === "Completed" ? "&#9745;" : "&#9744;"} Completed
+    `;
+
+    document.getElementById("reportSheet").innerHTML = `
+      <div class="sheet-header">
+        <h2>PRELIMINARY ACCIDENT REPORT</h2>
+        <div class="sheet-meta">
+          <span>REF NO: ${escapeHTML(r.id)}</span>
+          <span>DATE ISSUED: ${formatDateOnly(r.prepDate)}</span>
+        </div>
+      </div>
+
+      <table class="sheet-table">
+        <tr><td class="lbl">1. PROJECT:</td><td>${escapeHTML(r.project)}</td></tr>
+        <tr><td class="lbl">2. LOCATION / CHAINAGE:</td><td>${escapeHTML(r.location)}</td></tr>
+        <tr><td class="lbl">3. DATE & TIME OF ACCIDENT:</td><td>${formatDateTime(r.datetime)}</td></tr>
+        <tr><td class="lbl">4. NAME OF VICTIM:</td><td>${escapeHTML(r.victim)}</td></tr>
+        <tr><td class="lbl">5. IC / PASSPORT:</td><td>${escapeHTML(r.ic)}</td></tr>
+        <tr><td class="lbl">6. DATE OF BIRTH:</td><td>${formatDateOnly(r.dob)}</td></tr>
+        <tr><td class="lbl">7. EMPLOYER / WPC / TERM OF SERVICE:</td><td>${escapeHTML(r.employer)}</td></tr>
+        <tr><td class="lbl">8. DESIGNATION:</td><td>${escapeHTML(r.designation)}</td></tr>
+        <tr><td class="lbl">9. TYPE OF ACCIDENT:</td><td><strong>${escapeHTML(r.type)}</strong></td></tr>
+        <tr><td class="lbl">10. ACTIVITY AT THE TIME OF ACCIDENT:</td><td>${escapeHTML(r.activity)}</td></tr>
+        <tr><td class="lbl">11. BRIEF DESCRIPTION OF ACCIDENT:</td><td style="white-space:pre-line;">${escapeHTML(r.description)}</td></tr>
+        <tr><td class="lbl">12. INJURY / DAMAGE DETAILS:</td><td style="white-space:pre-line;">${escapeHTML(r.injury)}</td></tr>
+        <tr><td class="lbl">13. IMMEDIATE ACTION TAKEN:</td><td style="white-space:pre-line;">${escapeHTML(r.action)}</td></tr>
+        <tr><td class="lbl">14. AUTHORITIES NOTIFIED:</td><td>${escapeHTML(r.authorities)}</td></tr>
+        <tr><td class="lbl">15. PRELIMINARY FINDINGS:</td><td style="white-space:pre-line;">${escapeHTML(r.findings)}</td></tr>
+        <tr><td class="lbl">16. CORRECTIVE ACTION / RECOMMENDATIONS:</td><td style="white-space:pre-line;">${escapeHTML(r.corrective)}</td></tr>
+        <tr><td class="lbl">17. INVESTIGATION STATUS:</td><td>${statusCheckboxes}</td></tr>
+      </table>
+
+      <div class="signoff-box">
+        <div>
+          <strong>Prepared by:</strong>
+          <p>${escapeHTML(r.preparedBy)}</p>
+        </div>
+        <div>
+          <strong>Designation:</strong>
+          <p>${escapeHTML(r.prepDesignation)}</p>
+        </div>
+        <div>
+          <strong>Date:</strong>
+          <p>${formatDateOnly(r.prepDate)}</p>
+        </div>
+      </div>
+    `;
+
+    switchView("preview");
+  }
+
+  function copyWhatsAppSummary() {
+    const r = currentPreviewReport;
+    if (!r) return;
+    const text = `*PRELIMINARY ACCIDENT REPORT (${r.id})*
+*1. Project:* ${r.project}
+*2. Location / Chainage:* ${r.location}
+*3. Date & Time:* ${formatDateTime(r.datetime)}
+*4. Victim Name:* ${r.victim}
+*5. IC / Passport:* ${r.ic}
+*6. Date of Birth:* ${formatDateOnly(r.dob)}
+*7. Employer / WPC / Service:* ${r.employer}
+*8. Designation:* ${r.designation}
+*9. Type of Accident:* ${r.type}
+*10. Activity:* ${r.activity}
+*11. Brief Description:* ${r.description}
+*12. Injury / Damage:* ${r.injury}
+*13. Immediate Action:* ${r.action}
+*14. Authorities Notified:* ${r.authorities}
+*15. Preliminary Findings:* ${r.findings}
+*16. Corrective Action:* ${r.corrective}
+*17. Investigation Status:* ${r.status}
+
+*Prepared by:* ${r.preparedBy} (${r.prepDesignation})
+*Date:* ${formatDateOnly(r.prepDate)}`;
+
+    navigator.clipboard.writeText(text).then(() => {
+      showToast("Formatted summary copied to clipboard!");
+    });
+  }
+
+  function exportCSV() {
+    const reports = getReports();
+    if (!reports.length) return;
+    const headers = [
+      "Ref No", "1. Project", "2. Location/Chainage", "3. Date & Time",
+      "4. Victim Name", "5. IC/Passport", "6. DOB", "7. Employer/WPC/Term",
+      "8. Designation", "9. Type of Accident", "10. Activity",
+      "11. Description", "12. Injury/Damage", "13. Immediate Action",
+      "14. Authorities Notified", "15. Preliminary Findings",
+      "16. Corrective Action", "17. Status", "Prepared By", "Designation", "Date"
+    ];
+
+    const rows = reports.map(r => [
+      r.id, r.project, r.location, r.datetime, r.victim, r.ic, r.dob,
+      r.employer, r.designation, r.type, r.activity, r.description,
+      r.injury, r.action, r.authorities, r.findings, r.corrective,
+      r.status, r.preparedBy, r.prepDesignation, r.prepDate
+    ].map(v => `"${String(v || "").replace(/"/g, '""')}"`).join(","));
+
+    const csv = [headers.join(","), ...rows].join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `Preliminary_Accident_Reports_${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  // Initial load
+  renderTable();
+</script>
+</body>
+</html>
